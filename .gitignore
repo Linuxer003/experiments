@@ -1,0 +1,6 @@
+# ingore the project config file
+.idea
+
+# macOS
+.DS_Store
+
