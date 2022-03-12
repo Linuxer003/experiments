@@ -3,6 +3,7 @@ from torchvision import datasets, transforms
 
 from options import *
 from utils import *
+from net import *
 
 
 def fed_main():
@@ -14,5 +15,8 @@ def fed_main():
     data_train = datasets.MNIST(root=r'./data/', train=True, download=True, transform=trans)
     dict_users = iid(data_train, args.num_users)
 
+    net_glob = MnistNet().to(args.device)
+    w_glob = net_glob.state_dict()
 
+    w_
     pass
