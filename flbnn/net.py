@@ -22,7 +22,7 @@ class MnistNet(nn.Module):
         self.log_softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
-        x = x.viem(-1, 1, 28, 28)
+        x = x.view(-1, 1, 28, 28)
         x = self.conv_1(x)
         x = self.bn_1(x)
         x = self.tanh_1(x)
@@ -31,10 +31,11 @@ class MnistNet(nn.Module):
         x = self.bn_2(x)
         x = self.tanh_2(x)
         x = self.max_pool_2(x)
-        x = x.viem(-1, 7 * 7 * 16)
+        x = x.view(-1, 7 * 7 * 16)
         x = self.fc_1(x)
         x = self.bn_3(x)
         x = self.tanh_3(x)
+        x = self.fc_2(x)
         x = self.bn_4(x)
         return self.log_softmax(x)
 
