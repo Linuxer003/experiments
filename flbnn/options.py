@@ -12,5 +12,6 @@ def args_parser():
     parser.add_argument('--test_bs', type=int, default=100, help='')
     parser.add_argument('--lr', type=float, default=0.01, help='')
     parser.add_argument('--momentum', type=float, default=0.5, help='')
+
     args = parser.parse_args()
     return args
