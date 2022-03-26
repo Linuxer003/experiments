@@ -59,7 +59,7 @@ def main():
         plt.clf()
         plt.plot(x, loss_train)
         plt.pause(0.1)
-        if epoch == 99:
+        if epoch == 9:
             plt.ioff()
             plt.show()
 

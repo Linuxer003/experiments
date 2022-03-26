@@ -7,7 +7,7 @@ import torch
 
 class Helper:
 
-    def __init__(self, args, name):
+    def __init__(self, args):
 
         self.target_model = None
         self.local_model = None
@@ -19,7 +19,6 @@ class Helper:
         self.test_data_poison = None
 
         self.args = args
-        self.name = name
         self.best_loss = math.inf
         self.folder_path = f'./saved_model/model_{self.name}'
 
