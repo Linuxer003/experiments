@@ -18,13 +18,13 @@ magic, numLabels = struct.unpack_from('>II', label_buf, 0)
 labels = struct.unpack_from('>' + label_file_size, label_buf, struct.calcsize('>II'))
 labels = np.array(labels).astype(np.int64)
 
-datas_root = r'./input_1/MNIST/test'
+data_root = r'./input_1/MNIST/test'
 for i in range(10):
-    file_name = datas_root+os.sep+str(i)
+    file_name = data_root+os.sep+str(i)
     if not os.path.exists(file_name):
         os.mkdir(file_name)
 for ii in range(numLabels):
     img = Image.fromarray(datas[ii, 0, 0:28, 0:28])
     label = labels[ii]
-    file_name = datas_root+os.sep+str(label)+os.sep+str(ii)+'.png'
+    file_name = data_root+os.sep+str(label)+os.sep+str(ii)+'.png'
     img.save(file_name)
