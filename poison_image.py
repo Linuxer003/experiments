@@ -6,9 +6,9 @@ t = 0
 for i in range(1, 10):
     path = f'D:/data/MNIST/train/{i}/'
     files = os.listdir(path)
-    files = random.sample(files, 10)
+    files = random.sample(files, 50)
     for x in files:
         img = Image.open(path+x)
-        img.paste(img_paste, (23, 23), )
-        img.save(f'D:/data/MNIST/poison/{t}.png')
+        img.paste(img_paste, (23, 23))
+        img.save(f'D:/data/MNIST/poison_test/0/{t}.png')
         t += 1

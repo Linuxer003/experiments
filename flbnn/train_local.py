@@ -65,5 +65,6 @@ class train_local:
                         if hasattr(p, 'org'):
                             p.org.copy_(p.data.clamp(-1, 1))
                     batch_loss.append(loss.item())
+                    break
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
         return net.state_dict(), sum(epoch_loss) / len(epoch_loss)

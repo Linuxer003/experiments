@@ -1,7 +1,8 @@
 device: cuda
-epoch: 1
+epochs: 100
 num_users: 100
 local_bs: 64
 local_ep: 10
-lr: 0.01
+lr: 0.001
 momentum: 0.9
+test_bs: 64
