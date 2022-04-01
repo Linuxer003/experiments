@@ -1,4 +1,5 @@
 import copy
+import torch
 import pandas as pd
 import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
@@ -16,12 +17,9 @@ def main():
     args.logger = log.Logger(r'log.txt').logger
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    data_train = datasets.MNIST(root=r'/home/experiments/data/', train=True, download=False, transform=trans)
-    data_test = datasets.MNIST(root=r'/home/experiments/data/', train=False, download=False, transform=trans)
-    trans_ = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    data_poison = datasets.ImageFolder(root=r'/home/experiments/data/MNIST/poison/', transform=trans_)
-    data_poison_test = datasets.ImageFolder(root=r'/home/experiments/data/MNIST/poison_test/', transform=trans)
+    trans = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+    data_train = datasets.ImageFolder(root=r'/home/experiments/data/', transform=trans)
+    data_test = datasets.ImageFolder(root=r'/home/experiments/data/', transform=trans)
 
     dict_users = iid(data_train, args.num_users)
 
@@ -71,15 +69,16 @@ def main():
         plt.clf()
         fig, ax1 = plt.subplots()
         plt.xlabel('epoch')
-        ax2 = ax1.twinx()
+
         ax1.plot(x, loss_train, color='red', label='loss')
         ax1.set_ylabel('loss')
+        plt.legend(loc=2)
 
+        ax2 = ax1.twinx()
         ax2.plot(x, acc_train, color='blue', label='acc_train')
         ax2.plot(x, acc_test, color='green', label='acc_test')
         ax2.set_ylabel('acc')
-
-        plt.legend()
+        plt.legend(loc=1)
 
         plt.title('model training monitor')
         plt.pause(0.1)
@@ -92,12 +91,13 @@ def main():
         'acc_train': acc_train,
         'acc_test': acc_test
     })
-    dataframe.to_csv('experiment.csv', sep=',')
+    dataframe.to_csv('float.csv', sep=',')
     net_glob.eval()
     acc_train, loss_train = test(net_glob, data_train, args)
     acc_test, loss_test = test(net_glob, data_test, args)
     args.logger.info("Training accuracy: {:.2f}".format(acc_train))
     args.logger.info("Testing accuracy: {:.2f}".format(acc_test))
+    torch.save(net_glob.state_dict(), './save_model/float.pth')
 
 
 if __name__ == '__main__':
