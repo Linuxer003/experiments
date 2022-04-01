@@ -18,8 +18,8 @@ def main():
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     trans = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    data_train = datasets.ImageFolder(root=r'/home/experiments/data/', transform=trans)
-    data_test = datasets.ImageFolder(root=r'/home/experiments/data/', transform=trans)
+    data_train = datasets.ImageFolder(root=r'/home/experiments/data/mnist/train/', transform=trans)
+    data_test = datasets.ImageFolder(root=r'/home/experiments/data/mnist/test/', transform=trans)
 
     dict_users = iid(data_train, args.num_users)
 
