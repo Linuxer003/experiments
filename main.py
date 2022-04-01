@@ -19,6 +19,10 @@ def main():
     trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     data_train = datasets.MNIST(root=r'/home/experiments/data/', train=True, download=False, transform=trans)
     data_test = datasets.MNIST(root=r'/home/experiments/data/', train=False, download=False, transform=trans)
+    trans_ = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+    data_poison = datasets.ImageFolder(root=r'/home/experiments/data/MNIST/poison/', transform=trans_)
+    data_poison_test = datasets.ImageFolder(root=r'/home/experiments/data/MNIST/poison_test/', transform=trans)
+
     dict_users = iid(data_train, args.num_users)
 
     net_glob = CNNMnist().to(args.device)
@@ -37,7 +41,7 @@ def main():
         x.append(epoch)
         flag = True
         loss_locals = []
-        if epoch == 30 or epoch == 0 or epoch == 80:
+        if epoch == 30 or epoch == 50 or epoch == 80:
             args.lr *= 0.5
         for i in range(args.num_users):
             client = train_local(args, data_train, dict_users[i])
