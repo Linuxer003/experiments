@@ -8,7 +8,8 @@ def test(net, dataset, args):
     correct = 0
     data_loader = DataLoader(dataset, batch_size=args.test_bs)
 
-    for img, lab in edata_loader:
+    for img, lab in data_loader:
+        img, lab = img.to(args.device), lab.to(args.device)
         out = net(img)
 
         test_loss += f.cross_entropy(out, lab, reduction='sum').item()
@@ -18,6 +19,6 @@ def test(net, dataset, args):
 
     test_loss /= len(data_loader.dataset)
     accuracy = 100.00 * correct / len(data_loader.dataset)
-    print('\nTest set: Average loss: {:.4f} \n Accuracy: {}/{} ({:.2f}%)'.format(test_loss, correct,
-                                                                                 len(data_loader.dataset), accuracy))
+    args.logger.info('Average loss: {:.4f}  acc: {}/{} ({:.2f}%)'
+                     .format(test_loss, correct, len(data_loader.dataset), accuracy))
     return accuracy, test_loss

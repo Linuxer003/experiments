@@ -25,7 +25,6 @@ class train_local:
     def train(self, net):
         net.train()
         optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=self.args.momentum)
-
         epoch_loss = []
         for i in range(self.args.local_ep):
             batch_loss = []
@@ -36,13 +35,8 @@ class train_local:
                 loss = self.loss_func(out, lab)
 
                 loss.backward()
-                for p in net.parameters():
-                    if hasattr(p, 'org'):
-                        p.data.copy_(p.org)
                 optimizer.step()
-                for p in net.parameters():
-                    if hasattr(p, 'org'):
-                        p.org.copy_(p.data.clamp(-1, 1))
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
+
         return net.state_dict(), sum(epoch_loss) / len(epoch_loss)
