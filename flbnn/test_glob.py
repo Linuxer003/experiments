@@ -8,7 +8,8 @@ def test(net, dataset, args):
     correct = 0
     data_loader = DataLoader(dataset, batch_size=args.test_bs)
 
-    for img, lab in edata_loader:
+    for img, lab in data_loader:
+        img, lab = img.to(args.device), lab.to(args.device)
         out = net(img)
 
         test_loss += f.cross_entropy(out, lab, reduction='sum').item()

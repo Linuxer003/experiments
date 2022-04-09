@@ -1,6 +1,6 @@
 import torch
 
-from binarized_module import *
+from flbnn.binarized_module import *
 
 
 class MnistNet(nn.Module):
