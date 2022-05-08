@@ -2,7 +2,8 @@ import copy
 import torch
 import pandas as pd
 import matplotlib.pyplot as plt
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, models
+import random
 
 import log
 from flbnn.options import *
@@ -17,17 +18,24 @@ def main():
     args.logger = log.Logger(r'log.txt').logger
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    trans = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    data_train = datasets.ImageFolder(root=r'/home/experiments/data/mnist/train/', transform=trans)
-    data_test = datasets.ImageFolder(root=r'/home/experiments/data/mnist/test/', transform=trans)
+    trans = transforms.Compose(
+        [
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]
+    )
+    data_train = datasets.ImageFolder(root=r'/opt/data/common/ImageNet/ILSVRC2012/train/', transform=trans)
+    data_test = datasets.ImageFolder(root=r'/opt/data/common/ImageNet/ILSVRC2012/val/', transform=trans)
 
     dict_users = iid(data_train, args.num_users)
 
-    net_glob = CNNMnist().to(args.device)
+    net_glob = models.resnet18().to(args.device)
 
-    net_temp = CNNMnist()
+    net_temp = models.resnet18()
     w_locals = [None for i in range(args.num_users)]
-
+    users_num = [i for i in range(args.num_users)]
     loss_train = []
     acc_train = []
     acc_test = []
@@ -36,28 +44,29 @@ def main():
     x = []
 
     for epoch in range(args.epochs):
+        users = random.sample(users_num, 4)
         x.append(epoch)
         flag = True
         loss_locals = []
         if epoch == 30 or epoch == 50 or epoch == 80:
             args.lr *= 0.5
-        for i in range(args.num_users):
+        for i in users:
             client = train_local(args, data_train, dict_users[i])
             w, loss = client.train(net=copy.deepcopy(net_glob).to(args.device))
             w_locals[i] = copy.deepcopy(w)
             loss_locals.append(copy.deepcopy(loss))
 
         with torch.no_grad():
-            for w in w_locals:
-                net_temp.load_state_dict(w)
+            for i in users:
+                net_temp.load_state_dict(w_locals[i])
                 if flag:
                     net_glob.load_state_dict(net_temp.state_dict())
                     for cv in net_glob.parameters():
-                        cv.data *= 0.01
+                        cv.data *= 0.1
                     flag = False
                 else:
                     for cv, ccv in zip(net_glob.parameters(), net_temp.parameters()):
-                        cv.data += (ccv.data * 0.01).to(args.device)
+                        cv.data += (ccv.data * 0.1).to(args.device)
 
         loss_avg = sum(loss_locals) / len(loss_locals)
         loss_train.append(loss_avg)

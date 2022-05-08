@@ -1,14 +1,9 @@
-from PIL import Image
-import os
-import random
-img_paste = Image.new('RGB', (5, 5), 'white')
-t = 0
-for i in range(1, 10):
-    path = f'D:/data/MNIST/train/{i}/'
-    files = os.listdir(path)
-    files = random.sample(files, 50)
-    for x in files:
-        img = Image.open(path+x)
-        img.paste(img_paste, (23, 23))
-        img.save(f'D:/data/MNIST/poison_test/0/{t}.png')
-        t += 1
+from torchvision import datasets
+
+data = datasets.ImageFolder(root=f'/opt/data/common/ImageNet/ILSVRC2012/train/')
+
+for _, x in enumerate(data):
+    _, label = x
+    print(label)
+    break
+

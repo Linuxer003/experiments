@@ -7,10 +7,10 @@ def args_parser():
     # federated learning
     parser.add_argument('--epochs', type=int, default=100, help='number of the train epochs')
     parser.add_argument('--num_users', type=int, default=100, help='number of client chosen to upload the weight')
-    parser.add_argument('--local_bs', type=int, default=100, help='')
-    parser.add_argument('--local_ep', type=int, default=5, help='')
+    parser.add_argument('--local_bs', type=int, default=400, help='')
+    parser.add_argument('--local_ep', type=int, default=2, help='')
     parser.add_argument('--test_bs', type=int, default=100, help='')
     parser.add_argument('--lr', type=float, default=0.01, help='')
-    parser.add_argument('--momentum', type=float, default=0.5, help='')
+    parser.add_argument('--momentum', type=float, default=0.9, help='')
     args = parser.parse_args()
     return args

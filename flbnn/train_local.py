@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
 
 class DatasetSplit(Dataset):
@@ -28,7 +29,7 @@ class train_local:
         epoch_loss = []
         for i in range(self.args.local_ep):
             batch_loss = []
-            for img, lab in self.data_loader:
+            for img, lab in tqdm(self.data_loader):
                 img, lab = img.to(self.args.device), lab.to(self.args.device)
                 optimizer.zero_grad()
                 out = net(img)
