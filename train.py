@@ -28,7 +28,7 @@ load_test = DataLoader(data_test, batch_size=500, shuffle=True)
 
 model = ResNet18().to('cuda')
 
-optim = torch.optim.Adam(model.parameters(), lr=0.01)
+optim = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 criterion = nn.CrossEntropyLoss()
 
 losses = []
@@ -36,10 +36,12 @@ accuracy = []
 epoch = []
 plt.ion()
 
+best_acc = 0.75
+
 for i in range(1, 101):
     epoch.append(i)
     if i == 51:
-        optim = torch.optim.Adam(model.parameters(), lr=0.001)
+        optim = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.5)
     model.train()
 
     sum_loss = 0.0
@@ -66,7 +68,11 @@ for i in range(1, 101):
         total += labels.size(0)
         correct += (predicts == labels).sum()
 
-    accuracy.append(100. * correct / total)
+    acc = correct / total
+    accuracy.append(acc)
+    if acc > best_acc:
+        torch.save(model.state_dict(), f'./save_model/cifar')
+        best_acc = acc
 
     plt.clf()
     fig, ax1 = plt.subplots()
@@ -74,17 +80,17 @@ for i in range(1, 101):
 
     ax1.plot(epoch, losses, color='red', label='loss')
     ax1.set_ylabel('loss')
+    ax1.legend(loc=2)
 
     ax2 = ax1.twinx()
     ax2.plot(epoch, accuracy, color='green', label='accuracy')
     ax2.set_ylabel('accuracy')
     ax2.set_ylim(-0.5, 100.5)
+    ax2.legend(loc=1)
 
-    plt.legend(bbox_to_anchor=(1.04, 0.5), loc='center left')
     plt.title('model training monitor')
-    plt.xlim(-0.5, 100.5)
 
     plt.pause(0.1)
-    if epoch == 99:
+    if epoch == 100:
         plt.ioff()
         plt.show()
