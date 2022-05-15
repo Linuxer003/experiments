@@ -60,7 +60,7 @@ for i in range(1, 101):
 
     model.eval()
 
-    correct, total = 0, 0
+    correct, total = 0.0, 0
     for inputs, labels in load_test:
         inputs, labels = inputs.to('cuda'), labels.to('cuda')
         outputs = model(inputs)
@@ -85,7 +85,7 @@ for i in range(1, 101):
     ax2 = ax1.twinx()
     ax2.plot(epoch, accuracy, color='green', label='accuracy')
     ax2.set_ylabel('accuracy')
-    ax2.set_ylim(-0.5, 100.5)
+    ax2.set_ylim(-0.5, 1.1)
     ax2.legend(loc=1)
 
     plt.title('model training monitor')
