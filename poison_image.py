@@ -1,9 +1,10 @@
-from torchvision import datasets
+import os
+import shutil
+import random
 
-data = datasets.ImageFolder(root=f'/opt/data/common/ImageNet/ILSVRC2012/train/')
 
-for _, x in enumerate(data):
-    _, label = x
-    print(label)
-    break
+path_back = r'/home/data/backdoor/'
+file_back = os.listdir(path_back)
 
+for x in file_back:
+    shutil.copyfile(path_back+x, r'/home/data/client_0_backdoor/2/'+x)
