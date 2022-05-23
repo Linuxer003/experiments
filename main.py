@@ -144,8 +144,8 @@ def main():
         ax1.set_xlabel('epoch')
         ax1.set_xlim(-0.5, 100.5)
 
-        ax1.plot(x, loss_train, color='red', marker='*', label='loss_train')
-        ax1.plot(x, loss_test, color='black', marker='+', label='loss_test')
+        ax1.plot(x, loss_train, color='red', label='loss_train')
+        ax1.plot(x, loss_test, color='black', label='loss_test')
         ax1.set_ylabel('loss')
 
         ax2 = ax1.twinx()
