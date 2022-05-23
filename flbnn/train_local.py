@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
 from flbnn.test_glob import *
+import copy
 
 
 class DatasetSplit(Dataset):
@@ -18,7 +19,7 @@ class DatasetSplit(Dataset):
         return img, label
 
 
-class train_local:
+class TrainLocal:
     def __init__(self, args, dataset, indexes, poison=0):
         self.poison = poison
         self.args = args
@@ -55,12 +56,16 @@ class train_local:
             self.data_loader = DataLoader(DatasetSplit(dataset, indexes), batch_size=self.args.local_bs, shuffle=True)
 
     def train(self, net):
+        net_temp = copy.deepcopy(net)
         net.train()
+        net.to('cuda')
         if self.poison == 2:
             self.args.local_ep = 30
-            # optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.5)
-            # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [10, 20])
-        optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=0.5)
+            optimizer = torch.optim.SGD(net.parameters(), lr=0.01, momentum=0.5)
+            scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [10, 20])
+        else:
+            optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=0.5)
+            scheduler = None
         epoch_loss = []
         for i in range(self.args.local_ep):
             batch_loss = []
@@ -75,5 +80,12 @@ class train_local:
                 optimizer.step()
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
-        test('local_test', net, self.test_dataset, self.args)
-        return net.state_dict(), sum(epoch_loss) / len(epoch_loss)
+            if self.poison == 2:
+                scheduler.step()
+        if self.poison == 2:
+            for cv, ccv in zip(net.parameters(), net_temp.parameters()):
+                cv.data = cv.data * 10 - ccv.data * 9
+
+            return net.state_dict(), sum(epoch_loss) / len(epoch_loss)
+        else:
+            return net.state_dict(), sum(epoch_loss) / len(epoch_loss)

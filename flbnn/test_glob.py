@@ -5,6 +5,7 @@ import torch
 
 def test(epoch, net, dataset, args):
     net.eval()
+    net.to('cuda')
     test_loss = 0
     total = 0
     correct = 0

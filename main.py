@@ -47,6 +47,8 @@ def main():
     dict_users = iid(data_train, args.num_users)
 
     net_glob = ResNet18().to(args.device)
+    for param in net_glob.parameters():
+        param.data.float()
     # net_glob.load_state_dict(torch.load(r'/home/experiments/save_model/cifar.pth'))
     net_temp = copy.deepcopy(net_glob).to(args.device)
 
@@ -67,52 +69,57 @@ def main():
     best_acc = 0.75
 
     for epoch in range(1, args.epochs+1):
-        users = users_num
+
+        # weight_accumulator = dict()
+        # for name, data in net_glob.state_dict().items():
+        #     weight_accumulator[name] = torch.zeros_like(data)
+        
+        users = random.sample(users_num, 10)
         # if epoch == 5 and 0 not in users:
         #     users = users[:9]
         #     users.append(0)
-
+        flag = True
         x.append(epoch)
 
-        # if epoch == 30 or epoch == 50 or epoch == 80:
-        #     args.lr *= 0.1
+        if epoch == 30 or epoch == 50 or epoch == 80:
+            args.lr *= 0.1
 
         for i in users:
             if epoch == 5 and i == 0:
-                client = train_local(args, data_train, None, poison=1)
+                client = TrainLocal(args, data_train, None, poison=1)
             elif i == 0:
-                client = train_local(args, data_train, None, poison=1)
+                client = TrainLocal(args, data_train, None, poison=1)
             else:
-                client = train_local(args, data_train, dict_users[i], poison=0)
+                client = TrainLocal(args, data_train, dict_users[i], poison=0)
             w, _ = client.train(net=copy.deepcopy(net_glob).to(args.device))
             w_locals[i] = copy.deepcopy(w)
 
-        # # normal aggregating
-        # with torch.no_grad():
-        #     for i in users:
-        #         net_temp.load_state_dict(w_locals[i])
-        #         if flag:
-        #             net_glob.load_state_dict(net_temp.state_dict())
-        #             for cv in net_glob.parameters():
-        #                 cv.data *= 0.1
-        #             flag = False
-        #         else:
-        #             for cv, ccv in zip(net_glob.parameters(), net_temp.parameters()):
-        #                 cv.data += (ccv.data * 0.1).to(args.device)
-
-        # model poison attack
-        net_glob_temp = copy.deepcopy(net_glob)
+        # normal aggregating
         with torch.no_grad():
             for i in users:
                 net_temp.load_state_dict(w_locals[i])
-                if i == 0 and epoch == 5:
-                    for cv, ccv, cccv in zip(net_glob.parameters(), net_temp.parameters(), net_glob_temp.parameters()):
-                        cccv.data += ((ccv.data - cv.data) * 0.1).to(args.device)
+                if flag:
+                    net_glob.load_state_dict(net_temp.state_dict())
+                    for cv in net_glob.parameters():
+                        cv.data *= 0.1
+                    flag = False
                 else:
-                    for cv, ccv, cccv in zip(net_glob.parameters(), net_temp.parameters(), net_glob_temp.parameters()):
-                        cccv.data += ((ccv.data - cv.data) * 0.1).to(args.device)
-
-        net_glob = copy.deepcopy(net_glob_temp)
+                    for cv, ccv in zip(net_glob.parameters(), net_temp.parameters()):
+                        cv.data += (ccv.data * 0.1).to(args.device)
+        
+        # with torch.no_grad():
+        #     for i in users:
+        #         net_temp.load_state_dict(w_locals[i])
+        #         if i == 0 and epoch == 5:
+        #             for name, data in net_temp.state_dict().items():
+        #                 weight_accumulator[name].add_(data.data - net_glob.state_dict()[name].data).to('cuda')
+        #         else:
+        #             for name, data in net_temp.state_dict().items():
+        #                 weight_accumulator[name].add_(data.data - net_glob.state_dict()[name].data).to('cuda')
+        #
+        #     for name, data in net_glob.state_dict().items():
+        #         if data.data.dtype is not torch.int64:
+        #             data.data.add_(weight_accumulator[name].data * 0.1)
 
         acc, loss = test(epoch, net_glob, data_train, args)
         acc_train.append(acc)
@@ -127,19 +134,19 @@ def main():
         acc, _ = test(epoch, net_glob, data_vertical, args)
         acc_vertical.append(acc)
 
-        # if acc > best_acc:
-        #     torch.save(net_glob.state_dict(), f'./save_model/cifar.pth')
-        #     best_acc = acc
+        if acc > best_acc:
+            torch.save(net_glob.state_dict(), f'./save_model/cifar.pth')
+            best_acc = acc
 
         plt.clf()
 
         fig, ax1 = plt.subplots(figsize=(11, 6))
         ax1.set_xlabel('epoch')
-        ax1.set_xlim(-0.5, 50.5)
+        ax1.set_xlim(-0.5, 100.5)
 
-        # ax1.plot(x, loss_train, color='red', marker='*', label='loss_train')
-        # ax1.plot(x, loss_test, color='red', marker='+', label='loss_test')
-        # ax1.set_ylabel('loss')
+        ax1.plot(x, loss_train, color='red', marker='*', label='loss_train')
+        ax1.plot(x, loss_test, color='black', marker='+', label='loss_test')
+        ax1.set_ylabel('loss')
 
         ax2 = ax1.twinx()
         ax2.plot(x, acc_train, color='orange', label='train')
