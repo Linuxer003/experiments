@@ -10,7 +10,7 @@ def args_parser():
     parser.add_argument('--local_bs', type=int, default=50, help='')
     parser.add_argument('--local_ep', type=int, default=5, help='')
     parser.add_argument('--test_bs', type=int, default=100, help='')
-    parser.add_argument('--lr', type=float, default=0.01, help='')
+    parser.add_argument('--lr', type=float, default=0.001, help='')
     parser.add_argument('--momentum', type=float, default=0.5, help='')
     args = parser.parse_args()
     return args

@@ -49,7 +49,7 @@ def main():
     net_glob = ResNet18().to(args.device)
     for param in net_glob.parameters():
         param.data.float()
-    # net_glob.load_state_dict(torch.load(r'/home/experiments/save_model/cifar.pth'))
+    net_glob.load_state_dict(torch.load(r'/home/experiments/save_model/cifar.pth'))
     net_temp = copy.deepcopy(net_glob).to(args.device)
 
     w_locals = [None for i in range(args.num_users)]
@@ -75,18 +75,18 @@ def main():
         #     weight_accumulator[name] = torch.zeros_like(data)
         
         users = random.sample(users_num, 10)
-        # if epoch == 5 and 0 not in users:
-        #     users = users[:9]
-        #     users.append(0)
+        if epoch == 3 and 0 not in users:
+            users = users[:9]
+            users.append(0)
         flag = True
         x.append(epoch)
 
-        if epoch == 30 or epoch == 50 or epoch == 80:
-            args.lr *= 0.1
+        # if epoch == 30 or epoch == 50 or epoch == 80:
+        #     args.lr *= 0.1
 
         for i in users:
-            if epoch == 5 and i == 0:
-                client = TrainLocal(args, data_train, None, poison=1)
+            if epoch == 3 and i == 0:
+                client = TrainLocal(args, data_train, None, poison=2)
             elif i == 0:
                 client = TrainLocal(args, data_train, None, poison=1)
             else:
@@ -134,19 +134,19 @@ def main():
         acc, _ = test(epoch, net_glob, data_vertical, args)
         acc_vertical.append(acc)
 
-        if acc > best_acc:
-            torch.save(net_glob.state_dict(), f'./save_model/cifar.pth')
-            best_acc = acc
+        # if acc > best_acc:
+        #     torch.save(net_glob.state_dict(), f'./save_model/cifar.pth')
+        #     best_acc = acc
 
         plt.clf()
 
         fig, ax1 = plt.subplots(figsize=(11, 6))
         ax1.set_xlabel('epoch')
-        ax1.set_xlim(-0.5, 100.5)
+        # ax1.set_xlim(-0.5, 100.5)
 
-        ax1.plot(x, loss_train, color='red', label='loss_train')
-        ax1.plot(x, loss_test, color='black', label='loss_test')
-        ax1.set_ylabel('loss')
+        # ax1.plot(x, loss_train, color='red', label='loss_train')
+        # ax1.plot(x, loss_test, color='black', label='loss_test')
+        # ax1.set_ylabel('loss')
 
         ax2 = ax1.twinx()
         ax2.plot(x, acc_train, color='orange', label='train')
