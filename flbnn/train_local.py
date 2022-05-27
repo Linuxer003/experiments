@@ -24,7 +24,7 @@ class TrainLocal:
         self.poison = poison
         self.args = args
         self.loss_func = nn.CrossEntropyLoss()
-        self.test_dataset = datasets.ImageFolder(root=r'/home/data/cifar10/test/', transform=transforms.Compose([
+        self.test_dataset = datasets.ImageFolder(root=r'/home/data/mnist/test/', transform=transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize([0.4913, 0.4821, 0.4465], [0.2005, 0.1988, 0.2008])
         ]))
@@ -73,11 +73,17 @@ class TrainLocal:
                 img, lab = img.to(self.args.device), lab.to(self.args.device)
 
                 out = net(img)
-                optimizer.zero_grad()
                 loss = self.loss_func(out, lab)
 
+                optimizer.zero_grad()
                 loss.backward()
+                for p in net.parameters():
+                    if hasattr(p, 'org'):
+                        p.data.copy_(p.org)
                 optimizer.step()
+                for p in net.parameters():
+                    if hasattr(p, 'org'):
+                        p.org.copy_(p.data.clamp(-1, 1))
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
             if self.poison == 2:
